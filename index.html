@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoverCharge - Interactive Venture Analysis</title>
+    <!-- Chosen Palette: Slate & Teal -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard. The user starts with a clear hero section stating the mission. A sticky navigation bar allows users to jump to different, logically grouped sections: The Problem (Context & Impact), The Solution (Features & Benefits), Market Opportunity (Size & Competitors), Financials (Projections & KPIs), The Roadmap (Go-to-Market & Timeline), Contact Us, and Team. The AI-powered features (Assistant, Charging Guide, Trip Planner) are now grouped into a horizontally scrollable container within the Solutions section. This non-linear, thematic structure is chosen over the report's slide-by-slide format to allow stakeholders (investors, partners) to quickly access the information most relevant to them. Interactive charts and clickable elements are used to make data exploration engaging and self-directed, which is more effective for usability than static text and images. Subtle scroll-based animations enhance interactivity. -->
+    <!-- Visualization & Content Choices: 
+        - Problem Section: Goal is to establish the urgency. Uses dynamic counters for key stats (EVs per charger, range anxiety %) and a doughnut chart (Chart.js) to visually represent the pain point. Interaction: Hovering over the chart reveals tooltips with data. Justification: More impactful than just text.
+        - Solution Section: Goal is to explain the value proposition. Uses a tabbed interface (HTML/JS) for Key Features and Benefits (Functional, Emotional, Social). Interaction: Clicking tabs reveals different content panes. Justification: Organizes a large amount of text cleanly without a long scroll.
+        - Market Size Section: Goal is to show financial potential. Uses a bar chart (Chart.js) to compare TAM, SAM, and SOM. Interaction: Interactive tooltips on bars provide exact figures. Justification: A classic, easily understood visualization for market segmentation.
+        - Financial Projections: Goal is to demonstrate viability. Uses a combination line and bar chart (Chart.js) for monthly revenues and profits. Interaction: Hovering over data points shows detailed monthly figures. Justification: Clearly shows the growth trajectory and break-even point.
+        - Competitor Analysis: Goal is to show competitive advantage. Uses a dynamic HTML table. Justification: Provides a direct, factual comparison.
+        - Roadmap Section: Goal is to outline the execution plan. Uses a CSS-based timeline (HTML/Tailwind) with JS to highlight phases. Justification: Visually represents the flow of time and key deliverables more effectively than a list.
+        - AI-Powered Features (Assistant, Charging Guide, Trip Planner): These sections are now grouped into a horizontally scrollable container for a more compact and modern presentation. They continue to leverage the Gemini API for smart responses.
+        - Contact Us Section: Goal is to provide a direct communication channel. Uses a simple form (HTML/Tailwind) for user inquiries. Integration with EmailJS enables email delivery without a separate backend server. Justification: Standard web application feature for engagement, now functional via EmailJS.
+        - Animations: Subtle fade-in on scroll for main sections and dynamic counters for key stats. Hero section has distinct, more immediate fade-in and scale-up/translate animations for visual impact on load. Global background animation for an immersive feel. Justification: Enhances visual appeal and guides user attention without distracting from content.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- EmailJS CDN for sending emails -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            position: relative; /* Needed for pseudo-element positioning */
+            overflow-x: hidden; /* Prevent horizontal scroll from background animation */
+        }
+
+        /* Background animation for the entire page */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0f2f7, #f8fafc, #edfcfc); /* Softer, flowing gradient */
+            background-size: 200% 200%; /* Larger than viewport for movement */
+            animation: backgroundFlow 20s ease infinite alternate; /* Slower, smoother animation */
+            z-index: -1; /* Place behind content */
+            opacity: 0.7; /* Make it subtle */
+        }
+
+        @keyframes backgroundFlow {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, background-color 0.3s, transform 0.2s ease-out;
+            padding: 8px 12px;
+            border-radius: 6px;
+            position: relative;
+            z-index: 10; /* Ensure links are above blurring effect */
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0d9488;
+            background-color: #e0f2f7;
+            transform: translateY(-2px); /* Subtle lift on hover */
+        }
+        .tab-button.active {
+            background-color: #0d9488;
+            color: white;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #0d9488;
+            border: 3px solid #f8fafc; /* Thicker border for better visibility */
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0d9488;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* General Section Fade-in Animation */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Slightly longer transition */
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Hero Section Specific Animations */
+        #hero {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2f7 100%);
+            border-radius: 1rem; /* Consistent rounding */
+            box-shadow: 0 10px 25px -3px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.06); /* Deeper shadow */
+        }
+        .hero-text, .hero-button {
+            opacity: 0;
+            transform: translateY(30px); /* More pronounced initial translate */
+            transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+        }
+        .hero-text.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hero-button.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.4s; /* Slightly longer delay */
+        }
+        /* Mobile menu button refinement */
+        #mobile-menu-button {
+            border: 1px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        #mobile-menu-button:hover {
+            border-color: #0d9488;
+        }
+        /* Card enhancements */
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem; /* Equivalent to rounded-xl in Tailwind */
+        }
+        /* Input focus styling */
+        input:focus, textarea:focus {
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3); /* Teal focus ring */
+            border-color: #0d9488;
+        }
+        /* General button styling for better interaction */
+        button[type="submit"], .bg-teal-600 {
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button[type="submit"]:hover, .bg-teal-600:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Horizontal scrollable features container */
+        .features-carousel {
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+        }
+        .features-carousel > section {
+            scroll-snap-align: center; /* Snap individual sections into view */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-3xl font-extrabold text-slate-800">Hover</span><span class="text-3xl font-extrabold text-teal-600">Charge ⚡</span>
+                </div>
+                <!-- Always show desktop navigation links and mobile menu button -->
+                <div class="flex items-center">
+                    <div class="hidden md:flex items-baseline space-x-2 lg:space-x-4">
+                        <a href="#problem" class="nav-link text-slate-700 font-medium">The Problem</a>
+                        <a href="#solution" class="nav-link text-slate-700 font-medium">Features</a>
+                        <a href="#market" class="nav-link text-slate-700 font-medium">Market</a>
+                        <a href="#financials" class="nav-link text-slate-700 font-medium">Financials</a>
+                        <a href="#roadmap" class="nav-link text-slate-700 font-medium">Roadmap</a>
+                        <a href="#contact-us" class="nav-link text-slate-700 font-medium">Contact Us</a>
+                        <a href="#team" class="nav-link text-slate-700 font-medium">Team</a>
+                    </div>
+                    <button id="mobile-menu-button" class="ml-4 inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-teal-600 hover:bg-slate-100 focus:outline-none transition-colors duration-200">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <!-- Mobile menu content - remains hidden by default, toggled by JS -->
+        <div id="mobile-menu" class="hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#problem" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">The Problem</a>
+                <a href="#solution" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">Features</a>
+                <a href="#market" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">Market</a>
+                <a href="#financials" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">Financials</a>
+                <a href="#roadmap" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">Roadmap</a>
+                <a href="#contact-us" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">Contact Us</a>
+                <a href="#team" class="nav-link text-slate-700 block px-3 py-2 rounded-md text-base font-medium">Team</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <section id="hero" class="text-center py-20 md:py-28 lg:py-36 flex flex-col items-center justify-center min-h-[50vh]">
+            <div class="hero-content">
+                <h1 class="hero-text text-4xl md:text-6xl font-extrabold text-slate-800 leading-tight mb-4 tracking-tight">
+                    Eliminating Range Anxiety,<br class="hidden md:block" /> Powering India's EV Future.
+                </h1>
+                <p class="hero-text mt-6 max-w-3xl mx-auto text-lg md:text-xl text-slate-700 leading-relaxed">
+                    HoverCharge is an AI-powered platform combining real-time station discovery, on-demand mobile charging, and smart routing to make EV ownership seamless. We're bridging India's critical infrastructure gap to accelerate the transition to sustainable mobility.
+                </p>
+                <a href="#solution" class="hero-button mt-10 inline-block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
+                    Discover Our Solution
+                </a>
+            </div>
+        </section>
+
+        <section id="problem" class="py-16 scroll-mt-16 fade-in-section">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">The Core Problem: A Major Roadblock</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">The slow rollout of charging infrastructure is the single biggest factor hindering widespread EV adoption in India. This creates significant "range anxiety" and practical inconveniences for current and potential EV owners.</p>
+            </div>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <div class="bg-white p-6 card-shadow">
+                        <p class="text-5xl font-bold text-teal-600"><span id="ev-per-charger">1</span>:135</p>
+                        <p class="mt-2 text-slate-600 font-semibold">EVs per Charging Station in India</p>
+                        <p class="text-sm text-slate-500">A stark contrast to the global recommendation of 1:20, highlighting the severe infrastructure deficit.</p>
+                    </div>
+                    <div class="bg-white p-6 card-shadow">
+                        <p class="text-5xl font-bold text-teal-600" id="range-anxiety-stat">58%</p>
+                        <p class="mt-2 text-slate-600 font-semibold">of Potential Buyers Hesitate</p>
+                        <p class="text-sm text-slate-500">Range anxiety is a primary deterrent, directly impacting market growth and clean energy goals.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 card-shadow">
+                    <h3 class="text-xl font-semibold text-center mb-4 text-slate-700">Stakeholder Impact Analysis</h3>
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="py-16 scroll-mt-16 bg-slate-50 rounded-2xl fade-in-section card-shadow">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">Our Integrated Solution & Features</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">HoverCharge addresses the problem head-on with a unique combination of a digital platform and a physical service, creating a comprehensive and user-friendly charging ecosystem.</p>
+            </div>
+            <div class="mt-12 max-w-4xl mx-auto">
+                 <!-- Removed the app preview image div -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="mb-6">
+                        <div id="tabs-solution" class="flex justify-center border-b border-slate-200">
+                            <button data-tab="features" class="tab-button px-4 py-2 font-semibold text-slate-600 transition-all duration-300 active">Key Features</button>
+                            <button data-tab="benefits" class="tab-button px-4 py-2 font-semibold text-slate-600 transition-all duration-300">User Benefits</button>
+                        </div>
+                    </div>
+                    <div id="tab-content-features" class="tab-content">
+                        <ul class="space-y-4 text-slate-600 pl-4 list-none">
+                            <li class="flex items-start"><span class="text-teal-500 font-bold text-lg mr-3">✓</span> <div><strong>On-Demand Mobile Charging:</strong> Charging vans delivered to your location, eliminating the need to find a station.</div></li>
+                            <li class="flex items-start"><span class="text-teal-500 font-bold text-lg mr-3">✓</span> <div><strong>AI-Based Route Optimization:</strong> Smart algorithms find the fastest route to you or the nearest available station, saving time and energy.</div></li>
+                            <li class="flex items-start"><span class="text-teal-500 font-bold text-lg mr-3">✓</span> <div><strong>Real-Time Station Availability:</strong> Live data on station status, charger type, and wait times, all within the app.</div></li>
+                            <li class="flex items-start"><span class="text-teal-500 font-bold text-lg mr-3">✓</span> <div><strong>Seamless Booking & Payments:</strong> Easy in-app booking for both fixed stations and mobile vans with integrated digital payments.</div></li>
+                            <li class="flex items-start"><span class="text-teal-500 font-bold text-lg mr-3">✓</span> <div><strong>IoT-Powered Monitoring:</strong> Ensures reliability and provides accurate, real-time data for the entire network.</div></li>
+                        </ul>
+                        <!-- Horizontal Scrollable Container for AI Features -->
+                        <div class="mt-8">
+                            <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Our AI-Powered Smart Tools:</h3>
+                            <div class="flex overflow-x-auto snap-x features-carousel py-4 -mx-4 px-4 scrollbar-hide">
+                                <section id="ev-assistant" class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 px-4 py-6 bg-slate-50 rounded-2xl card-shadow mr-4 scroll-mt-16">
+                                    <div class="text-center">
+                                        <h2 class="text-2xl font-bold text-slate-800 mb-3">✨ Ask HoverCharge AI</h2>
+                                        <p class="mt-2 text-slate-600 text-sm">Have questions about EV charging, range anxiety, or how HoverCharge works? Our AI assistant is here to help! Ask anything and get instant insights.</p>
+                                    </div>
+                                    <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
+                                        <div class="mb-3">
+                                            <label for="ev-query" class="block text-slate-700 text-xs font-bold mb-1">Your Question:</label>
+                                            <textarea id="ev-query" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline resize-y min-h-[80px]" placeholder="e.g., What causes range anxiety?"></textarea>
+                                        </div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <button id="submit-ev-query" class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-3 rounded-xl focus:outline-none focus:shadow-outline transition duration-300 ease-in-out flex items-center justify-center">
+                                                Ask AI ✨
+                                            </button>
+                                            <div id="loading-spinner" class="loading-spinner hidden"></div>
+                                        </div>
+                                        <div id="ev-response" class="bg-slate-100 p-3 rounded-lg text-slate-700 text-sm min-h-[80px] max-h-[200px] overflow-y-auto">
+                                            <p class="text-slate-500">Your AI-powered answer will appear here...</p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section id="ev-charging-guide" class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 px-4 py-6 bg-slate-50 rounded-2xl card-shadow mr-4 scroll-mt-16">
+                                    <div class="text-center">
+                                        <h2 class="text-2xl font-bold text-slate-800 mb-3">✨ EV Charging Guide</h2>
+                                        <p class="mt-2 text-slate-600 text-sm">Unsure about charger compatibility? Get instant information on what chargers work best with your EV, necessary adapters, and tips for optimal charging.</p>
+                                    </div>
+                                    <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
+                                        <div class="mb-3">
+                                            <label for="ev-model" class="block text-slate-700 text-xs font-bold mb-1">Your EV Model:</label>
+                                            <input type="text" id="ev-model" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Tesla Model 3" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="charger-type" class="block text-slate-700 text-xs font-bold mb-1">Desired Charger Type:</label>
+                                            <input type="text" id="charger-type" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., CCS" required>
+                                        </div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <button id="get-compatibility-info" class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-3 rounded-xl focus:outline-none focus:shadow-outline transition duration-300 ease-in-out flex items-center justify-center">
+                                                Get Info ✨
+                                            </button>
+                                            <div id="charging-guide-loading-spinner" class="loading-spinner hidden"></div>
+                                        </div>
+                                        <div id="charging-guide-response" class="bg-slate-100 p-3 rounded-lg text-slate-700 text-sm min-h-[80px] max-h-[200px] overflow-y-auto">
+                                            <p class="text-slate-500">AI-powered charging compatibility info will appear here...</p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section id="ai-trip-planner" class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 px-4 py-6 bg-slate-50 rounded-2xl card-shadow scroll-mt-16">
+                                    <div class="text-center">
+                                        <h2 class="text-2xl font-bold text-slate-800 mb-3">🗺️ AI Trip Planner</h2>
+                                        <p class="mt-2 text-slate-600 text-sm">Plan your EV journey with confidence! Get AI-powered recommendations for charging stops, routes, and overall trip strategy based on your specific needs.</p>
+                                    </div>
+                                    <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
+                                        <div class="mb-3">
+                                            <label for="trip-start-location" class="block text-slate-700 text-xs font-bold mb-1">Start Location:</label>
+                                            <input type="text" id="trip-start-location" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Mumbai" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="trip-destination" class="block text-slate-700 text-xs font-bold mb-1">Destination:</label>
+                                            <input type="text" id="trip-destination" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Pune" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="trip-battery-percent" class="block text-slate-700 text-xs font-bold mb-1">Current Battery (%):</label>
+                                            <input type="number" id="trip-battery-percent" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" min="0" max="100" placeholder="e.g., 80" required>
+                                        </div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <button id="plan-trip-button" class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-3 rounded-xl focus:outline-none focus:shadow-outline transition duration-300 ease-in-out flex items-center justify-center">
+                                                Plan My Trip ✨
+                                            </button>
+                                            <div id="trip-planner-loading-spinner" class="loading-spinner hidden"></div>
+                                        </div>
+                                        <div id="trip-planner-response" class="bg-slate-100 p-3 rounded-lg text-slate-700 text-sm min-h-[80px] max-h-[200px] overflow-y-auto">
+                                            <p class="text-slate-500">Your AI-powered trip plan will appear here...</p>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-content-benefits" class="tab-content hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                            <div class="bg-teal-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-teal-700 text-lg">Functional</h4>
+                                <p class="text-sm text-teal-600 mt-1">Find chargers instantly, plan trips hassle-free, and eliminate range anxiety with real-time updates.</p>
+                            </div>
+                            <div class="bg-teal-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-teal-700 text-lg">Emotional</h4>
+                                <p class="text-sm text-teal-600 mt-1">Feel confident on long trips, reduce stress over charging delays, and enjoy reliable convenience.</p>
+                            </div>
+                            <div class="bg-teal-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-teal-700 text-lg">Social</h4>
+                                <p class="text-sm text-teal-600 mt-1">Gain recognition as an eco-conscious individual and inspire others to adopt sustainable transport.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="market" class="py-16 scroll-mt-16 fade-in-section">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">Tapping into a High-Growth Market</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">The EV market is expanding rapidly, but its full potential is constrained by charging infrastructure. HoverCharge is perfectly positioned to unlock this potential, capturing a significant share of a multi-billion dollar opportunity.</p>
+            </div>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-semibold text-center mb-4">Market Size (India)</h3>
+                    <div class="chart-container">
+                        <canvas id="marketSizeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-semibold text-center mb-4">Competitive Landscape</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Competitor</th>
+                                    <th scope="col" class="px-6 py-3">Type</th>
+                                    <th scope="col" class="px-6 py-3">Key Weakness</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white border-b">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">Tata Power EZ</th>
+                                    <td class="px-6 py-4">Indirect</td>
+                                    <td class="px-6 py-4">Tech limitations, service issues</td>
+                                </tr>
+                                <tr class="bg-white border-b">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">VoltUp</th>
+                                    <td class="px-6 py-4">Indirect</td>
+                                    <td class="px-6 py-4">Battery swap focus, limited network</td>
+                                </tr>
+                                 <tr class="bg-white border-b">
+                                    <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">SparXcharge</th>
+                                    <td class="px-6 py-4">Direct</td>
+                                    <td class="px-6 py-4">Lacks on-demand mobile charging & AI routing</td>
+                                </tr>
+                                <tr class="bg-white">
+                                    <td colspan="3" class="px-6 py-4 bg-teal-50 text-teal-800 font-semibold">
+                                        <strong>Our Advantage:</strong> AI-driven routing, mobile on-demand vans, and a unified platform address key gaps left by competitors.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="financials" class="py-16 scroll-mt-16 bg-slate-50 rounded-2xl fade-in-section">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">Financial Projections & Viability</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">Our financial model projects strong growth driven by a dual revenue stream and scalable operations. We anticipate reaching break-even within the first year, demonstrating a clear path to profitability.</p>
+            </div>
+             <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
+                     <h3 class="text-lg font-semibold text-center mb-4">Year 1: Projected Revenue vs. Net Profit (₹)</h3>
+                    <div class="chart-container !h-96">
+                        <canvas id="financialsChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                        <p class="text-slate-500 font-semibold">Revenue Models</p>
+                        <p class="text-2xl font-bold text-teal-600 mt-1">Pay-per-Use &amp; Subscription</p>
+                         <p class="text-xs text-slate-500 mt-1">₹10/min or ₹499/month</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                        <p class="text-slate-500 font-semibold">Year 1 Projected Revenue</p>
+                        <p class="text-2xl font-bold text-teal-600 mt-1">₹1.75M</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                        <p class="text-slate-500 font-semibold">Break-Even Point</p>
+                        <p class="text-2xl font-bold text-teal-600 mt-1">Month 3 (March)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="py-16 scroll-mt-16 fade-in-section">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">Our Go-to-Market Roadmap</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">We have a clear, phased plan to launch, grow, and scale HoverCharge, starting with key urban centers and expanding based on data-driven insights.</p>
+            </div>
+            <div class="mt-12 max-w-3xl mx-auto">
+                <div class="relative pl-8 border-l-2 border-slate-200">
+                    <div class="timeline-item mb-12">
+                        <h4 class="text-lg font-semibold text-teal-600">Months 1-3: Foundation & MVP</h4>
+                        <p class="text-slate-600">Build and test the Minimum Viable Product (MVP) with early users, gather feedback, and launch the initial marketing website. Secure initial seed funding.</p>
+                        <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹6 Lakh</p>
+                    </div>
+                    <div class="timeline-item mb-12">
+                        <h4 class="text-lg font-semibold text-teal-600">Months 4-6: Beta Launch & Partnerships</h4>
+                        <p class="text-slate-600">Incorporate the company, launch the app in a closed beta, and establish strategic partnerships with businesses and EV manufacturers.</p>
+                         <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹3 Lakh</p>
+                    </div>
+                    <div class="timeline-item mb-12">
+                        <h4 class="text-lg font-semibold text-teal-600">Months 7-9: Pilot Launch & Operations</h4>
+                        <p class="text-slate-600">Initiate pilot launch in the first target city (Bengaluru). Deploy the first fleet of mobile charging vans and begin tracking key performance metrics.</p>
+                         <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹10 Lakh</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4 class="text-lg font-semibold text-teal-600">Months 10-12: Scale & Expand</h4>
+                        <p class="text-slate-600">Full public launch. Expand operations, hire key personnel for sales and support, and protect intellectual property. Begin planning for expansion into other metro cities.</p>
+                         <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹6 Lakh</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The AI-powered sections are now dynamically loaded/scrolled -->
+        <!-- They are included within the #solution section's tab-content-features for grouping -->
+
+        <section id="contact-us" class="py-16 scroll-mt-16 fade-in-section">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">Get in Touch</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">We'd love to hear from you! Whether you have questions, feedback, or partnership inquiries, please feel free to reach out using the form below or our contact details.</p>
+            </div>
+            <div class="mt-12 max-w-xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                <form id="emailjs-contact-form" class="space-y-6">
+                    <div>
+                        <label for="user_name" class="block text-sm font-medium text-slate-700">Your Name</label>
+                        <input type="text" id="user_name" name="user_name" placeholder="Your Name" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="user_email" class="block text-sm font-medium text-slate-700">Email Address</label>
+                        <input type="email" id="user_email" name="user_email" placeholder="Your Email" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-slate-700">Subject</label>
+                        <input type="text" id="subject" name="subject" placeholder="Subject" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="message_text" class="block text-sm font-medium text-slate-700">Message</label>
+                        <textarea id="message_text" name="message_text" placeholder="Your Message" rows="5" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-y"></textarea>
+                    </div>
+                    <div>
+                        <button type="submit" id="send-message-button" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                            Send Message
+                        </button>
+                    </div>
+                    <p id="contact-form-status" class="text-center text-sm mt-4"></p>
+                </form>
+                <div class="mt-8 text-center text-slate-600">
+                    <p class="font-semibold">Our Location:</p>
+                    <p>VIT-AP University, Amaravati</p>
+                    <p class="mt-4 font-semibold">Email:</p>
+                    <p><a href="mailto:dhanushbheemisetty0@gmail.com" class="text-teal-600 hover:underline">dhanushbheemisetty0@gmail.com</a></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="team" class="py-16 scroll-mt-16 bg-slate-50 rounded-2xl fade-in-section">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800">The Founding Team</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-slate-600">A passionate team of students from VIT-AP University with a complementary skill set in data, AI, and computer science, driven to solve real-world sustainability challenges.</p>
+            </div>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <h4 class="font-bold text-slate-800">D. Srinivasa Rao</h4>
+                    <p class="text-sm text-teal-600 font-semibold">CEO</p>
+                    <p class="text-xs text-slate-500 mt-1">B.Tech - Data Analytics</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <h4 class="font-bold text-slate-800">B. Dhanush</h4>
+                    <p class="text-sm text-teal-600 font-semibold">CTO</p>
+                    <p class="text-xs text-slate-500 mt-1">B.Tech - AI & ML</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-slate-800 text-white">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2025 HoverCharge. All rights reserved. <span class="text-slate-400">- An Interactive Venture Analysis</span></p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                         mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            function animateValue(obj, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    obj.innerHTML = Math.floor(progress * (end - start) + start);
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.id === 'ev-per-charger') {
+                           // No animation for this one
+                        }
+                        if (entry.target.id === 'range-anxiety-stat') {
+                           animateValue(entry.target, 0, 58, 1500);
+                           entry.target.innerHTML += '%';
+                           observer.unobserve(entry.target);
+                        }
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            observer.observe(document.getElementById('range-anxiety-stat'));
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    tabContents.forEach(content => {
+                        if (content.id === `tab-content-${target}`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#475569';
+
+            const impactCtx = document.getElementById('impactChart')?.getContext('2d');
+            if(impactCtx) {
+                new Chart(impactCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['EV Owners (Range Anxiety)', 'Potential Buyers (Hesitation)', 'Fleet Operators (Delays)', 'General Public (Pollution)'],
+                        datasets: [{
+                            label: 'Impact',
+                            data: [35, 30, 20, 15],
+                            backgroundColor: ['#0d9488', '#14b8a6', '#5eead4', '#99f6e4'],
+                            borderColor: '#f8fafc',
+                            borderWidth: 4,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                     boxWidth: 15,
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            const marketCtx = document.getElementById('marketSizeChart')?.getContext('2d');
+            if(marketCtx) {
+                new Chart(marketCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total Addressable Market (TAM)', 'Serviceable Available Market (SAM)', 'Serviceable Obtainable Market (SOM)'],
+                        datasets: [{
+                            label: 'Market Size', // Change label to be more general
+                            data: [4980, 108, 0.1022], // Data in Billions (₹)
+                            backgroundColor: ['#0d9488', '#14b8a6', '#5eead4'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                         indexAxis: 'y',
+                         responsive: true,
+                         maintainAspectRatio: false,
+                         scales: {
+                            x: {
+                                // Explicitly set type to logarithmic
+                                type: 'logarithmic',
+                                // Set a floor for the scale slightly below the smallest value
+                                min: 0.01, // Represents 10 Million INR to make SOM visible
+                                title: { display: true, text: 'Market Size (Billions ₹, Log Scale)' },
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        // Custom formatting for log scale ticks
+                                        if (value >= 1) {
+                                            return `₹${value}B`; // Billions
+                                        } else if (value >= 0.001) { // For values less than 1 Billion, convert to Millions
+                                            return `₹${(value * 1000).toFixed(0)}M`; // Millions
+                                        }
+                                        return null; // Hide other small ticks if necessary
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let value = context.raw;
+                                        let unit = 'B';
+                                        let formattedValue = value.toFixed(2);
+
+                                        if (value < 1) { // Convert to Millions if less than 1 Billion for tooltip
+                                            formattedValue = (value * 1000).toFixed(2);
+                                            unit = 'M';
+                                        }
+                                        return `${context.label}: ₹${formattedValue}${unit}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const financialsCtx = document.getElementById('financialsChart')?.getContext('2d');
+            if(financialsCtx) {
+                const financialLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const revenueData = [60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000, 160000, 170000];
+                const profitData = [4000, 8300, 12500, 16800, 21000, 25300, 29600, 33900, 38200, 42500, 46800, 51000];
+
+                new Chart(financialsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: financialLabels,
+                        datasets: [
+                            {
+                                type: 'line',
+                                label: 'Net Profit',
+                                data: profitData,
+                                borderColor: '#0d9488',
+                                backgroundColor: '#0d9488',
+                                tension: 0.3,
+                                yAxisID: 'y1',
+                            },
+                            {
+                                type: 'bar',
+                                label: 'Revenue',
+                                data: revenueData,
+                                backgroundColor: '#99f6e4',
+                                borderRadius: 4,
+                                yAxisID: 'y',
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                title: { display: true, text: 'Revenue (₹)' }
+                            },
+                             y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                title: { display: true, text: 'Net Profit (₹)' },
+                                grid: {
+                                    drawOnChartArea: false, 
+                                },
+                            }
+                        },
+                         plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const submitEvQueryButton = document.getElementById('submit-ev-query');
+            const evQueryTextarea = document.getElementById('ev-query');
+            const evResponseDiv = document.getElementById('ev-response');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            if (submitEvQueryButton && evQueryTextarea && evResponseDiv && loadingSpinner) {
+                submitEvQueryButton.addEventListener('click', async () => {
+                    const prompt = evQueryTextarea.value.trim();
+                    if (!prompt) {
+                        evResponseDiv.innerHTML = '<p class="text-red-500">Please enter a question.</p>';
+                        return;
+                    }
+
+                    evResponseDiv.innerHTML = '<p class="text-slate-500">Thinking...</p>';
+                    loadingSpinner.classList.remove('hidden');
+                    submitEvQueryButton.disabled = true;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // You must replace this with your actual Gemini API key
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            evResponseDiv.innerHTML = `<p>${text}</p>`;
+                        } else {
+                            evResponseDiv.innerHTML = '<p class="text-red-500">Sorry, I could not get a response from the AI. Please try again.</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error calling Gemini API:', error);
+                        evResponseDiv.innerHTML = '<p class="text-red-500">An error occurred while fetching the AI response. Please check your network or try again later.</p>';
+                    } finally {
+                        loadingSpinner.classList.add('hidden');
+                        submitEvQueryButton.disabled = false;
+                    }
+                });
+            }
+
+            // EV Charging Guide Feature Logic
+            const evModelInput = document.getElementById('ev-model');
+            const chargerTypeInput = document.getElementById('charger-type');
+            const getCompatibilityInfoButton = document.getElementById('get-compatibility-info');
+            const chargingGuideResponseDiv = document.getElementById('charging-guide-response');
+            const chargingGuideLoadingSpinner = document.getElementById('charging-guide-loading-spinner');
+
+            if (evModelInput && chargerTypeInput && getCompatibilityInfoButton && chargingGuideResponseDiv && chargingGuideLoadingSpinner) {
+                getCompatibilityInfoButton.addEventListener('click', async () => {
+                    const evModel = evModelInput.value.trim();
+                    const chargerType = chargerTypeInput.value.trim();
+
+                    if (!evModel || !chargerType) {
+                        chargingGuideResponseDiv.innerHTML = '<p class="text-red-500">Please enter both EV Model and Charger Type.</p>';
+                        return;
+                    }
+
+                    chargingGuideResponseDiv.innerHTML = '<p class="text-slate-500">Fetching compatibility info...</p>';
+                    chargingGuideLoadingSpinner.classList.remove('hidden');
+                    getCompatibilityInfoButton.disabled = true;
+
+                    const prompt = `Explain the charging compatibility between a "${evModel}" and a "${chargerType}" charger. Include details on whether they are compatible, if an adapter is needed, and any key considerations for optimal charging. Keep the explanation concise and practical.`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // You must replace this with your actual Gemini API key
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            chargingGuideResponseDiv.innerHTML = `<p>${text}</p>`;
+                        } else {
+                            chargingGuideResponseDiv.innerHTML = '<p class="text-red-500">Sorry, I could not retrieve compatibility information. Please try again with different inputs.</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error calling Gemini API for Charging Guide:', error);
+                        chargingGuideResponseDiv.innerHTML = '<p class="text-red-500">An error occurred while fetching the charging guide information. Please check your network or try again later.</p>';
+                    } finally {
+                        chargingGuideLoadingSpinner.classList.add('hidden');
+                        getCompatibilityInfoButton.disabled = false;
+                    }
+                });
+            }
+
+            // AI Trip Planner Feature Logic
+            const tripStartLocationInput = document.getElementById('trip-start-location');
+            const tripDestinationInput = document.getElementById('trip-destination');
+            const tripBatteryPercentInput = document.getElementById('trip-battery-percent');
+            const planTripButton = document.getElementById('plan-trip-button');
+            const tripPlannerResponseDiv = document.getElementById('trip-planner-response');
+            const tripPlannerLoadingSpinner = document.getElementById('trip-planner-loading-spinner');
+
+            if (tripStartLocationInput && tripDestinationInput && tripBatteryPercentInput && planTripButton && tripPlannerResponseDiv && tripPlannerLoadingSpinner) {
+                planTripButton.addEventListener('click', async () => {
+                    const startLocation = tripStartLocationInput.value.trim();
+                    const destination = tripDestinationInput.value.trim();
+                    const batteryPercent = tripBatteryPercentInput.value.trim();
+
+                    if (!startLocation || !destination || !batteryPercent) {
+                        tripPlannerResponseDiv.innerHTML = '<p class="text-red-500">Please fill in all trip details.</p>';
+                        return;
+                    }
+
+                    tripPlannerResponseDiv.innerHTML = '<p class="text-slate-500">Planning your trip...</p>';
+                    tripPlannerLoadingSpinner.classList.remove('hidden');
+                    planTripButton.disabled = true;
+
+                    const prompt = `Plan an electric vehicle trip from "${startLocation}" to "${destination}", assuming a current battery charge of ${batteryPercent}%. Suggest optimal charging stops along the way, mentioning charger types (e.g., CCS, Type 2) if possible, and provide general advice for EV long-distance travel. Be concise and practical, listing key stops and tips.`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // You must replace this with your actual Gemini API key
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            tripPlannerResponseDiv.innerHTML = `<p>${text}</p>`;
+                        } else {
+                            tripPlannerResponseDiv.innerHTML = '<p class="text-red-500">Sorry, I could not generate a trip plan. Please try again with different details.</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error calling Gemini API for Trip Planner:', error);
+                        tripPlannerResponseDiv.innerHTML = '<p class="text-red-500">An error occurred while planning your trip. Please check your network or try again later.</p>';
+                    } finally {
+                        tripPlannerLoadingSpinner.classList.add('hidden');
+                        planTripButton.disabled = false;
+                    }
+                });
+            }
+
+
+            // EmailJS integration for Contact Us form
+            // Initialize EmailJS with your Public Key
+            emailjs.init("cB0Wo1S7gcRNWYRG9"); // Replace with your actual Public Key
+
+            const emailjsContactForm = document.getElementById('emailjs-contact-form');
+            const contactFormStatus = document.getElementById('contact-form-status');
+            const sendMessageButton = document.getElementById('send-message-button');
+
+            if (emailjsContactForm && contactFormStatus && sendMessageButton) {
+                emailjsContactForm.addEventListener('submit', async (event) => {
+                    event.preventDefault(); // Prevent default form submission
+
+                    contactFormStatus.textContent = 'Sending message...';
+                    contactFormStatus.className = 'text-center text-sm mt-4 text-slate-500';
+                    sendMessageButton.disabled = true;
+
+                    try {
+                        // Use emailjs.sendForm instead of emailjs.send
+                        const result = await emailjs.sendForm(
+                            'service_hxswuyg', // Your Service ID
+                            'template_3y1ibb8', // Your Template ID
+                            emailjsContactForm // The form element itself
+                        );
+
+                        if (result.status === 200) {
+                            contactFormStatus.textContent = 'Message sent successfully! We will get back to you soon.';
+                            contactFormStatus.className = 'text-center text-sm mt-4 text-teal-600 font-semibold';
+                            emailjsContactForm.reset(); // Clear the form
+                        } else {
+                            contactFormStatus.textContent = `Failed to send message. Error: ${result.text || 'Unknown error'}. Please try again.`;
+                            contactFormStatus.className = 'text-center text-sm mt-4 text-red-500 font-semibold';
+                        }
+                    } catch (error) {
+                        console.error('EmailJS sending error:', error);
+                        contactFormStatus.textContent = 'An error occurred while sending the message. Please try again later.';
+                        contactFormStatus.className = 'text-center text-sm mt-4 text-red-500 font-semibold';
+                    } finally {
+                        sendMessageButton.disabled = false;
+                    }
+                });
+            }
+
+
+            // Fade-in-section animation logic
+            const fadeInSections = document.querySelectorAll('.fade-in-section');
+            const sectionObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1 // Trigger when 10% of the section is visible
+            });
+
+            fadeInSections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+
+            // Hero section specific animation trigger
+            const heroText = document.querySelectorAll('.hero-text');
+            const heroButton = document.querySelector('.hero-button');
+            const heroObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        heroText.forEach(el => el.classList.add('is-visible'));
+                        if (heroButton) heroButton.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 }); // Trigger when 50% of the hero section is visible
+
+            const heroSection = document.getElementById('hero');
+            if (heroSection) {
+                heroObserver.observe(heroSection);
+            }
+        });
+    </script>
+</body>
+</html>
