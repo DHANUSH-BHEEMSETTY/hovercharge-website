@@ -477,22 +477,22 @@
             <div class="mt-12 max-w-3xl mx-auto">
                 <div class="relative pl-8 border-l-2 border-slate-200">
                     <div class="timeline-item mb-12">
-                        <h4 class="text-lg font-semibold text-teal-600">Months 1-3: Foundation & MVP</h4>
+                        <h4 class="font-semibold text-teal-600 text-lg">Months 1-3: Foundation & MVP</h4>
                         <p class="text-slate-600">Build and test the Minimum Viable Product (MVP) with early users, gather feedback, and launch the initial marketing website. Secure initial seed funding.</p>
                         <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹6 Lakh</p>
                     </div>
                     <div class="timeline-item mb-12">
-                        <h4 class="text-lg font-semibold text-teal-600">Months 4-6: Beta Launch & Partnerships</h4>
+                        <h4 class="font-semibold text-teal-600 text-lg">Months 4-6: Beta Launch & Partnerships</h4>
                         <p class="text-slate-600">Incorporate the company, launch the app in a closed beta, and establish strategic partnerships with businesses and EV manufacturers.</p>
                          <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹3 Lakh</p>
                     </div>
                     <div class="timeline-item mb-12">
-                        <h4 class="text-lg font-semibold text-teal-600">Months 7-9: Pilot Launch & Operations</h4>
+                        <h4 class="font-semibold text-teal-600 text-lg">Months 7-9: Pilot Launch & Operations</h4>
                         <p class="text-slate-600">Initiate pilot launch in the first target city (Bengaluru). Deploy the first fleet of mobile charging vans and begin tracking key performance metrics.</p>
                          <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹10 Lakh</p>
                     </div>
                     <div class="timeline-item">
-                        <h4 class="text-lg font-semibold text-teal-600">Months 10-12: Scale & Expand</h4>
+                        <h4 class="font-semibold text-teal-600 text-lg">Months 10-12: Scale & Expand</h4>
                         <p class="text-slate-600">Full public launch. Expand operations, hire key personnel for sales and support, and protect intellectual property. Begin planning for expansion into other metro cities.</p>
                          <p class="text-sm text-slate-500 mt-1">Funds Needed: ₹6 Lakh</p>
                     </div>
@@ -843,8 +843,10 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    // IMPORTANT: Replaced with your provided Gemini API key
-                    const apiKey = "AIzaSyCj6kvHV51omtuWdfIdRDOfnXoZhkRIaFI"; 
+                    // IMPORTANT: API Key is intentionally left empty here to prevent public leaks.
+                    // For a live application, you must use a secure server-side proxy or environment variables.
+                    // DO NOT hardcode your API key in client-side code for production.
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     try {
@@ -875,7 +877,7 @@
 
             // EV Charging Guide Feature Logic
             const evModelInput = document.getElementById('ev-model');
-            const chargerTypeInput = document.getElementById('charger-type'); // Corrected typo here
+            const chargerTypeInput = document.getElementById('charger-type'); 
             const getCompatibilityInfoButton = document.getElementById('get-compatibility-info');
             const chargingGuideResponseDiv = document.getElementById('charging-guide-response');
             const chargingGuideLoadingSpinner = document.getElementById('charging-guide-loading-spinner');
@@ -896,8 +898,10 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    // IMPORTANT: Replaced with your provided Gemini API key
-                    const apiKey = "AIzaSyCj6kvHV51omtuWdfIdRDOfnXoZhkRIaFI"; 
+                    // IMPORTANT: API Key is intentionally left empty here to prevent public leaks.
+                    // For a live application, you must use a secure server-side proxy or environment variables.
+                    // DO NOT hardcode your API key in client-side code for production.
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     try {
@@ -950,8 +954,10 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    // IMPORTANT: Replaced with your provided Gemini API key
-                    const apiKey = "AIzaSyCj6kvHV51omtuWdfIdRDOfnXoZhkRIaFI"; 
+                    // IMPORTANT: API Key is intentionally left empty here to prevent public leaks.
+                    // For a live application, you must use a secure server-side proxy or environment variables.
+                    // DO NOT hardcode your API key in client-side code for production.
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     try {
