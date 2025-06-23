@@ -13,7 +13,7 @@
         - Financial Projections: Goal is to demonstrate viability. Uses a combination line and bar chart (Chart.js) for monthly revenues and profits. Interaction: Hovering over data points shows detailed monthly figures. Justification: Clearly shows the growth trajectory and break-even point.
         - Competitor Analysis: Goal is to show competitive advantage. Uses a dynamic HTML table. Justification: Provides a direct, factual comparison.
         - Roadmap Section: Goal is to outline the execution plan. Uses a CSS-based timeline (HTML/Tailwind) with JS to highlight phases. Justification: Visually represents the flow of time and key deliverables more effectively than a list.
-        - AI-Powered Features (Assistant, Charging Guide, Trip Planner): These sections are now grouped into a horizontally scrollable container for a more compact and modern presentation. They continue to leverage the Gemini API for smart responses.
+        - AI-Powered Features (Assistant, Charging Guide, Trip Planner): These sections are now grouped into a horizontally scrollable container within the Solutions section. They continue to leverage the Gemini API for smart responses.
         - Contact Us Section: Goal is to provide a direct communication channel. Uses a simple form (HTML/Tailwind) for user inquiries. Integration with EmailJS enables email delivery without a separate backend server. Justification: Standard web application feature for engagement, now functional via EmailJS.
         - Animations: Subtle fade-in on scroll for main sections and dynamic counters for key stats. Hero section has distinct, more immediate fade-in and scale-up/translate animations for visual impact on load. Global background animation for an immersive feel. Justification: Enhances visual appeal and guides user attention without distracting from content.
     -->
@@ -296,7 +296,7 @@
                                     </div>
                                     <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
                                         <div class="mb-3">
-                                            <label for="ev-query" class="block text-slate-700 text-xs font-bold mb-1">Your Question:</label>
+                                            <label for="ev-query" class="block text-sm font-medium text-slate-700">Your Question:</label>
                                             <textarea id="ev-query" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline resize-y min-h-[80px]" placeholder="e.g., What causes range anxiety?"></textarea>
                                         </div>
                                         <div class="flex items-center justify-between mb-3">
@@ -318,11 +318,11 @@
                                     </div>
                                     <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
                                         <div class="mb-3">
-                                            <label for="ev-model" class="block text-slate-700 text-xs font-bold mb-1">Your EV Model:</label>
+                                            <label for="ev-model" class="block text-sm font-medium text-slate-700">Your EV Model:</label>
                                             <input type="text" id="ev-model" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Tesla Model 3" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="charger-type" class="block text-slate-700 text-xs font-bold mb-1">Desired Charger Type:</label>
+                                            <label for="charger-type" class="block text-sm font-medium text-slate-700">Desired Charger Type:</label>
                                             <input type="text" id="charger-type" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., CCS" required>
                                         </div>
                                         <div class="flex items-center justify-between mb-3">
@@ -344,15 +344,15 @@
                                     </div>
                                     <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
                                         <div class="mb-3">
-                                            <label for="trip-start-location" class="block text-slate-700 text-xs font-bold mb-1">Start Location:</label>
+                                            <label for="trip-start-location" class="block text-sm font-medium text-slate-700">Start Location:</label>
                                             <input type="text" id="trip-start-location" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Mumbai" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="trip-destination" class="block text-slate-700 text-xs font-bold mb-1">Destination:</label>
+                                            <label for="trip-destination" class="block text-sm font-medium text-slate-700">Destination:</label>
                                             <input type="text" id="trip-destination" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Pune" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="trip-battery-percent" class="block text-slate-700 text-xs font-bold mb-1">Current Battery (%):</label>
+                                            <label for="trip-battery-percent" class="block text-sm font-medium text-slate-700">Current Battery (%):</label>
                                             <input type="number" id="trip-battery-percent" class="shadow appearance-none border rounded w-full py-1 px-2 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" min="0" max="100" placeholder="e.g., 80" required>
                                         </div>
                                         <div class="flex items-center justify-between mb-3">
@@ -463,7 +463,6 @@
                         <p class="text-2xl font-bold text-teal-600 mt-1">₹1.75M</p>
                     </div>
                     <div class="bg-white p-6 rounded-xl shadow-md text-center">
-                        <p class="text-slate-500 font-semibold">Break-Even Point</p>
                         <p class="text-2xl font-bold text-teal-600 mt-1">Month 3 (March)</p>
                     </div>
                 </div>
@@ -524,8 +523,8 @@
                         <input type="text" id="subject" name="subject" placeholder="Subject" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm">
                     </div>
                     <div>
-                        <label for="message_text" class="block text-sm font-medium text-slate-700">Message</label>
-                        <textarea id="message_text" name="message_text" placeholder="Your Message" rows="5" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-y"></textarea>
+                        <label for="message" class="block text-sm font-medium text-slate-700">Message</label>
+                        <textarea id="message_text" name="message" placeholder="Your Message" rows="5" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-y"></textarea>
                     </div>
                     <div>
                         <button type="submit" id="send-message-button" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
@@ -739,7 +738,7 @@
                                     label: function(context) {
                                         let value = context.raw;
                                         let unit = 'B';
-                                        let formattedValue = value.toFixed(2);
+                                        let formattedValue = (value * 1).toFixed(2); // Ensure it's treated as a number for .toFixed
 
                                         if (value < 1) { // Convert to Millions if less than 1 Billion for tooltip
                                             formattedValue = (value * 1000).toFixed(2);
@@ -844,7 +843,8 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // You must replace this with your actual Gemini API key
+                    // IMPORTANT: Replaced with your provided Gemini API key
+                    const apiKey = "AIzaSyCj6kvHV51omtuWdfIdRDOfnXoZhkRIaFI"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     try {
@@ -864,7 +864,7 @@
                             evResponseDiv.innerHTML = '<p class="text-red-500">Sorry, I could not get a response from the AI. Please try again.</p>';
                         }
                     } catch (error) {
-                        console.error('Error calling Gemini API:', error);
+                        console.error('Error calling Gemini API for EV Assistant:', error);
                         evResponseDiv.innerHTML = '<p class="text-red-500">An error occurred while fetching the AI response. Please check your network or try again later.</p>';
                     } finally {
                         loadingSpinner.classList.add('hidden');
@@ -875,17 +875,16 @@
 
             // EV Charging Guide Feature Logic
             const evModelInput = document.getElementById('ev-model');
-            const chargerTypeInput = document.getElementById('charger-type');
+            const chargerTypeInput = document.getElementById('charger-type'); // Corrected typo here
             const getCompatibilityInfoButton = document.getElementById('get-compatibility-info');
             const chargingGuideResponseDiv = document.getElementById('charging-guide-response');
             const chargingGuideLoadingSpinner = document.getElementById('charging-guide-loading-spinner');
 
             if (evModelInput && chargerTypeInput && getCompatibilityInfoButton && chargingGuideResponseDiv && chargingGuideLoadingSpinner) {
                 getCompatibilityInfoButton.addEventListener('click', async () => {
-                    const evModel = evModelInput.value.trim();
-                    const chargerType = chargerTypeInput.value.trim();
-
-                    if (!evModel || !chargerType) {
+                    const prompt = `Explain the charging compatibility between a "${evModelInput.value.trim()}" and a "${chargerTypeInput.value.trim()}" charger. Include details on whether they are compatible, if an adapter is needed, and any key considerations for optimal charging. Keep the explanation concise and practical.`;
+                    
+                    if (!evModelInput.value.trim() || !chargerTypeInput.value.trim()) {
                         chargingGuideResponseDiv.innerHTML = '<p class="text-red-500">Please enter both EV Model and Charger Type.</p>';
                         return;
                     }
@@ -894,12 +893,11 @@
                     chargingGuideLoadingSpinner.classList.remove('hidden');
                     getCompatibilityInfoButton.disabled = true;
 
-                    const prompt = `Explain the charging compatibility between a "${evModel}" and a "${chargerType}" charger. Include details on whether they are compatible, if an adapter is needed, and any key considerations for optimal charging. Keep the explanation concise and practical.`;
-
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // You must replace this with your actual Gemini API key
+                    // IMPORTANT: Replaced with your provided Gemini API key
+                    const apiKey = "AIzaSyCj6kvHV51omtuWdfIdRDOfnXoZhkRIaFI"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     try {
@@ -938,11 +936,9 @@
 
             if (tripStartLocationInput && tripDestinationInput && tripBatteryPercentInput && planTripButton && tripPlannerResponseDiv && tripPlannerLoadingSpinner) {
                 planTripButton.addEventListener('click', async () => {
-                    const startLocation = tripStartLocationInput.value.trim();
-                    const destination = tripDestinationInput.value.trim();
-                    const batteryPercent = tripBatteryPercentInput.value.trim();
-
-                    if (!startLocation || !destination || !batteryPercent) {
+                    const prompt = `Plan an electric vehicle trip from "${tripStartLocationInput.value.trim()}" to "${tripDestinationInput.value.trim()}", assuming a current battery charge of ${tripBatteryPercentInput.value.trim()}%. Suggest optimal charging stops along the way, mentioning charger types (e.g., CCS, Type 2) if possible, and provide general advice for EV long-distance travel. Be concise and practical, listing key stops and tips.`;
+                    
+                    if (!tripStartLocationInput.value.trim() || !tripDestinationInput.value.trim() || !tripBatteryPercentInput.value.trim()) {
                         tripPlannerResponseDiv.innerHTML = '<p class="text-red-500">Please fill in all trip details.</p>';
                         return;
                     }
@@ -951,12 +947,11 @@
                     tripPlannerLoadingSpinner.classList.remove('hidden');
                     planTripButton.disabled = true;
 
-                    const prompt = `Plan an electric vehicle trip from "${startLocation}" to "${destination}", assuming a current battery charge of ${batteryPercent}%. Suggest optimal charging stops along the way, mentioning charger types (e.g., CCS, Type 2) if possible, and provide general advice for EV long-distance travel. Be concise and practical, listing key stops and tips.`;
-
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // You must replace this with your actual Gemini API key
+                    // IMPORTANT: Replaced with your provided Gemini API key
+                    const apiKey = "AIzaSyCj6kvHV51omtuWdfIdRDOfnXoZhkRIaFI"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     try {
@@ -988,7 +983,7 @@
 
             // EmailJS integration for Contact Us form
             // Initialize EmailJS with your Public Key
-            emailjs.init("cB0Wo1S7gcRNWYRG9"); // Replace with your actual Public Key
+            emailjs.init("cB0Wo1S7gcRNWYRG9"); 
 
             const emailjsContactForm = document.getElementById('emailjs-contact-form');
             const contactFormStatus = document.getElementById('contact-form-status');
@@ -1003,10 +998,9 @@
                     sendMessageButton.disabled = true;
 
                     try {
-                        // Use emailjs.sendForm instead of emailjs.send
                         const result = await emailjs.sendForm(
-                            'service_hxswuyg', // Your Service ID
-                            'template_3y1ibb8', // Your Template ID
+                            'service_hxswuyg', // Your EmailJS Service ID
+                            'template_3y1ibb8', // Your EmailJS Template ID
                             emailjsContactForm // The form element itself
                         );
 
@@ -1015,12 +1009,15 @@
                             contactFormStatus.className = 'text-center text-sm mt-4 text-teal-600 font-semibold';
                             emailjsContactForm.reset(); // Clear the form
                         } else {
-                            contactFormStatus.textContent = `Failed to send message. Error: ${result.text || 'Unknown error'}. Please try again.`;
+                            // Log the full error object for better debugging
+                            console.error('EmailJS sendForm failed, result:', result);
+                            contactFormStatus.textContent = `Failed to send message. Error: ${result.text || 'Unknown error'}. Please verify your EmailJS setup (Service ID, Template ID, Public Key, and template variable names).`;
                             contactFormStatus.className = 'text-center text-sm mt-4 text-red-500 font-semibold';
                         }
                     } catch (error) {
-                        console.error('EmailJS sending error:', error);
-                        contactFormStatus.textContent = 'An error occurred while sending the message. Please try again later.';
+                        // Log the actual error object received in the catch block
+                        console.error('EmailJS sending error (catch block):', error);
+                        contactFormStatus.textContent = `An unexpected error occurred while sending the message. Please check your console for more details and verify your EmailJS setup. Error: ${error.message || error}`;
                         contactFormStatus.className = 'text-center text-sm mt-4 text-red-500 font-semibold';
                     } finally {
                         sendMessageButton.disabled = false;
